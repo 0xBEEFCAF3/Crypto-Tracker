@@ -42,9 +42,9 @@
 
 #include "ili9340.h"
 
-#define D_C  2  // GPIO2=Pin#3
-#define RES  3  // GPIO3=Pin#5
-#define C_S  8  // GPIO8=Pin#24
+#define D_C  4  // GPIO2=Pin#16
+#define RES  5  // GPIO3=Pin#18
+#define C_S  10  // GPIO8=Pin#24
 
 #define _DEBUG_   0
 
@@ -53,7 +53,6 @@ uint16_t _FONT_FILL_;
 uint16_t _FONT_FILL_COLOR_;
 uint16_t _FONT_UNDER_LINE_;
 uint16_t _FONT_UNDER_LINE_COLOR_;
-
 int _width;
 int _height;
 int _offsetx;
@@ -153,17 +152,24 @@ void lcdInit(int width, int height, int offsetx, int offsety){
   _height = height;
   _offsetx = offsetx;
   _offsety = offsety;
-
-  if (wiringPiSetupGpio() == -1) {
-    printf("wiringPiSetup Error\n");
+  int response;
+  int fd;
+  if (response = wiringPiSetup() == -1) {
+    printf("wiringPiSetup Error %d \n", response);
     return;
   }
-  wiringPiSPISetup(0, 16000000);
+  if(fd = wiringPiSPISetup(0, 32000000) == -1) {
+    printf("wiringPiSpeed setup Error \n");
+    return;
+  }
+//  wiringPiSPISetup(0, 16000000);
 //  wiringPiSPISetup(0, 32000000);
 
   _FONT_DIRECTION_ = DIRECTION0;
   _FONT_FILL_ = false;
   _FONT_UNDER_LINE_ = false;
+
+  printf("LCD init finished response=%d, fd=%d, board rev=%d \n", response, fd, piBoardRev());
 
 }
 void lcdReset(void){
@@ -172,7 +178,6 @@ void lcdReset(void){
   pinMode(C_S, OUTPUT);
   digitalWrite(D_C, HIGH);
   digitalWrite(C_S, LOW);
-
   digitalWrite(RES, LOW);
   delay(100);
   digitalWrite(RES, HIGH);
@@ -225,7 +230,7 @@ void lcdReset(void){
 void lcdSetup(void){
   lcdWriteCommandByte(0xC0);		//Power Control 1
   lcdWriteDataByte(0x23); 
-
+  
   lcdWriteCommandByte(0xC1);		//Power Control 2
   lcdWriteDataByte(0x10);
 
@@ -303,6 +308,7 @@ void lcdSetup(void){
 #endif
   
   lcdWriteCommandByte(0x29);			//Display ON 
+  printf("LCD set up finished \n");
 }
 
 // Draw pixel

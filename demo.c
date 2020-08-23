@@ -10,7 +10,7 @@
 #include "ili9340.h"
 
 #define JAPANESE 0
-#define _DEBUG_ 0
+#define _DEBUG_ 1 
 
 //When you'd like to wait by a keyboard entries, enable this line.
 //#define WAIT inputKey()
@@ -191,7 +191,7 @@ if(_DEBUG_)printf("fontWidth=%d fontHeight=%d\n",fontWidth,fontHeight);
 
     color = RED;
     strcpy((char *)ascii, "Direction=0");
-    lcdSetFontDirection(DIRECTION0);
+    lcdSetFontDirection(DIRECTION90);
     uint16_t ypos = height - fontHeight - 1;
     lcdDrawUTF8String(fx, 0, ypos, ascii, color);
 
@@ -471,11 +471,19 @@ if(_DEBUG_)printf("ReadTFTConfig:screenWidth=%d height=%d\n",screenWidth, screen
     lcdInit(screenWidth, screenHeight, offsetx, offsety);
     lcdReset();
     lcdSetup();
+	
 
+    /*** Test text ***/
 
+    unsigned char testText[64];
+    lcdFillScreen( BLACK);
+    lcdSetFontDirection(DIRECTION90);
+    strncpy((char *)testText, "BTC", sizeof(testText));
+    lcdDrawUTF8String(fx32G, 200,200, testText, WHITE);
+
+    return;
     ColorBarTest(screenWidth, screenHeight);
     WAIT;
-
     if (screenWidth >= 240) { 
         ArrowTest(fx24G, screenWidth, screenHeight);
     } else {
@@ -521,7 +529,7 @@ if(_DEBUG_)printf("ReadTFTConfig:screenWidth=%d height=%d\n",screenWidth, screen
 
     // Multi Font Test
     uint16_t color;
-    unsigned char utf8[64];;
+    unsigned char utf8[64];
     uint16_t xpos = 0;
     uint16_t ypos = screenHeight-16-1;
     int margin = 10;
@@ -579,7 +587,7 @@ if(_DEBUG_)printf("ReadTFTConfig:screenWidth=%d height=%d\n",screenWidth, screen
     lcdSetFontDirection(0);
     WAIT;
 
-    //lcdDisplayOff();
+    lcdDisplayOff();
 
     return 0;
 }
