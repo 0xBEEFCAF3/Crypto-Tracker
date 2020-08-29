@@ -8,6 +8,8 @@
 #include <sys/time.h>
 
 #include <curl/curl.h>
+#include <json-c/json.h>
+
 #include "ili9340.h"
 
 
@@ -73,6 +75,10 @@ void printBTCLabel(){
     lcdDrawUTF8String(fx32G, 200,200, testText, WHITE);
 }
 
+void printPrice(char* price){
+    lcdSetFontDirection(DIRECTION90);
+    lcdDrawUTF8String(fx32G, 120, 180, price, WHITE);
+}
 
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -125,6 +131,21 @@ void getPrices(struct MemoryStruct *chunk){
    if(_DEBUG_) printf("Request made successfully ! \n");
 }
 
+char* getCryptoPrice(char* rawJson, char* cryptoSymbol, char* currency) {
+     struct json_object *parsed_json;
+     struct json_object *btc_object;
+     struct json_object *double_object;
+     
+     parsed_json = json_tokener_parse(rawJson);
+     (json_object_object_get_ex(parsed_json, cryptoSymbol, &btc_object));
+     (json_object_object_get_ex(btc_object, currency, &double_object));
+ 
+     if(_DEBUG_) printf("Current %s price:\n---\n%s\n---\n", currency, json_object_to_json_string_ext(double_object, JSON_C_TO_STRING_SPACED | JSON_C_TO_STRING_PRETTY));
+     
+     return json_object_to_json_string_ext(double_object, 0);
+
+}
+
 int main(int argc, char** argv) {
 
     int i;
@@ -175,9 +196,15 @@ int main(int argc, char** argv) {
 	for(int i=0;i<chunk.size; i++ ){
             printf("%c", chunk.memory[i]);
         }
+   	printf("\n");
     }
 
-    return;
+    //Extract USD - BTC Price
+    char* btc_price_s = getCryptoPrice(chunk.memory, "BTC", "USD");
+    printPrice(btc_price_s);	
+//    lcdDrawFillRect(0, 0, 200, 200, GREEN);
+
+    return 1;
 /*
  *
  *
