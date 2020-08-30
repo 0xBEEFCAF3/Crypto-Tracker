@@ -121,8 +121,6 @@ void getPrices(struct MemoryStruct *chunk){
      /* Check for errors */ 
      if(res != CURLE_OK)
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-     //else{
-    	//     }
      /* always cleanup */ 
      curl_easy_cleanup(curl);				       
    }
@@ -156,9 +154,7 @@ int main(int argc, char** argv) {
     char dir[128];
     char cpath[128];
     struct MemoryStruct chunk;
-    
-    chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
-    chunk.size = 0;    /* no data at this point */  
+    double lastBTCPrice = 0.0;
 
     if(_DEBUG_)  printf("argv[0]=%s\n",argv[0]);
     strcpy(dir, argv[0]);
@@ -182,35 +178,43 @@ int main(int argc, char** argv) {
     printf("Your TFT offsety    is %d.\n",offsety);
 
 
-    // You can change font file 
+    // Init fonts and lcd screen 
     initFonts();
     lcdInit(screenWidth, screenHeight, offsetx, offsety);
     lcdReset();
     lcdSetup();
+    for(;;){
+       
+       chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
+       chunk.size = 0;    /* no data at this point */  
+
 	
-    printBTCLabel();
-    getPrices(&chunk); 
-    printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
-    if(_DEBUG_){
-        printf("Printing response: \n");
-	for(int i=0;i<chunk.size; i++ ){
+      printBTCLabel();
+      getPrices(&chunk); 
+      printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
+      if(_DEBUG_){
+          printf("Printing response: \n");
+          for(int i=0;i<chunk.size; i++ ){
             printf("%c", chunk.memory[i]);
-        }
-   	printf("\n");
-    }
+          }
+   	  printf("\n");
+      }
 
-    //Extract USD - BTC Price
-    char* btc_price_s = getCryptoPrice(chunk.memory, "BTC", "USD");
-    printPrice(btc_price_s);	
-//    lcdDrawFillRect(0, 0, 200, 200, GREEN);
-
+      //Extract USD - BTC Price
+      char* btc_price_s = getCryptoPrice(chunk.memory, "BTC", "USD");
+      printPrice(btc_price_s);
+      // Convert to double 
+      char * arbPtr;
+      double btc_price_d = strtod(btc_price_s, &arbPtr);
+      //Draw an arrow
+      (lastBTCPrice > btc_price_d) ? lcdDrawFillArrow(130, 200, 180, 200, 20, GREEN) : lcdDrawFillArrow(130, 200, 180, 200, 20, RED);
+      lastBTCPrice = btc_price_d;
+      sleep(5);
+      free(chunk.memory);
+    }	
+    curl_global_cleanup();
     return 1;
-/*
- *
- *
- * 
-   curl_global_cleanup();
-*/
+
 
 }
 

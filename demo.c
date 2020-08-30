@@ -481,7 +481,6 @@ if(_DEBUG_)printf("ReadTFTConfig:screenWidth=%d height=%d\n",screenWidth, screen
     strncpy((char *)testText, "BTC", sizeof(testText));
     lcdDrawUTF8String(fx32G, 200,200, testText, WHITE);
 
-    return;
     ColorBarTest(screenWidth, screenHeight);
     WAIT;
     if (screenWidth >= 240) { 
