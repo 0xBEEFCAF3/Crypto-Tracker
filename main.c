@@ -101,7 +101,8 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 void getPrices(struct MemoryStruct *chunk){
-    char* RESOURCE_URL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,ZEC,LTC,DAI&tsyms=USD";
+    //char* RESOURCE_URL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,ZEC,LTC,DAI&tsyms=USD";
+   char* RESOURCE_URL = "https://api.coindesk.com/v1/bpi/currentprice.json"; 
    CURL *curl;
    CURLcode res;
       
@@ -132,11 +133,14 @@ void getPrices(struct MemoryStruct *chunk){
 char* getCryptoPrice(char* rawJson, char* cryptoSymbol, char* currency) {
      struct json_object *parsed_json;
      struct json_object *btc_object;
+     struct json_object *currency_object;
      struct json_object *double_object;
      
      parsed_json = json_tokener_parse(rawJson);
-     (json_object_object_get_ex(parsed_json, cryptoSymbol, &btc_object));
-     (json_object_object_get_ex(btc_object, currency, &double_object));
+     (json_object_object_get_ex(parsed_json, "bpi", &btc_object));
+     (json_object_object_get_ex(btc_object, currency, &currency_object));
+     (json_object_object_get_ex(currency_object, "rate_float", &double_object));
+
  
      if(_DEBUG_) printf("Current %s price:\n---\n%s\n---\n", currency, json_object_to_json_string_ext(double_object, JSON_C_TO_STRING_SPACED | JSON_C_TO_STRING_PRETTY));
      
@@ -207,9 +211,11 @@ int main(int argc, char** argv) {
       char * arbPtr;
       double btc_price_d = strtod(btc_price_s, &arbPtr);
       //Draw an arrow
-      (lastBTCPrice > btc_price_d) ? lcdDrawFillArrow(130, 200, 180, 200, 20, GREEN) : lcdDrawFillArrow(130, 200, 180, 200, 20, RED);
+      (lastBTCPrice > btc_price_d) 
+	      ? lcdDrawFillArrow(120, 275, 150, 275, 20, GREEN) 
+	      : lcdDrawFillArrow(150, 275, 120, 275, 20, RED);
       lastBTCPrice = btc_price_d;
-      sleep(5);
+      sleep(60);
       free(chunk.memory);
     }	
     curl_global_cleanup();
