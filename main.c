@@ -337,9 +337,10 @@ int main(int argc, char** argv) {
 
     printBTCLabel();
     for(;;){
-		displayBlockHeight();
-		displayPrice();
+	displayBlockHeight();
+	displayPrice();
     	sleep(60);
+	lcdReset();
     }	
     curl_global_cleanup();
     return 1;
